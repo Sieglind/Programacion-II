@@ -9,13 +9,19 @@ int elevar(int base, int exponente);
 
 void mostrarArreglo(int inicio, int arreglo[], int final);
 
-void mostrarArregloInvertido(int inicio, int arreglo[], int validos);
+void mostrarArregloInvertido(int posicion, int arreglo[], int validos);
 
 int esCapicua(int validos, int arreglo[validos], int iteracion);
 
 int sumarArreglo(int iteracion, int arreglo[], int validos);
 
-int buscarMenor(int inicio,int arreglo[],int validos);
+int buscarMenor(int inicio, int arreglo[], int validos);
+
+void escribirArregloEnArchivo(int arreglo[], int validos);
+
+int buscarMenorDeArchivo(int validos);
+
+int realizarBusqueda(FILE * archivo,int validos,int indice);
 
 int main() {
     srand(time(NULL));
@@ -31,12 +37,13 @@ int main() {
 //    printf("%d elevado a la %d es igual a: %d\n",base,exponente, elevar(base,exponente));
 
     int arreglo[5] = {1, 2, 3, 4, 5};
+    int arregloRandom[5] = {rand() % 10, rand() % 10, rand() % 10, rand() % 10, rand() % 10};
 
     ///Ejercicio 3
 //    mostrarArreglo(0, arreglo, 5);
 
     ///Ejercicio 4
-//    mostrarArregloInvertido(4,arreglo,5);
+//    mostrarArregloInvertido(0,arreglo,5);
 
     ///Ejercicio 5
 //    printf("El arreglo impar%s es capicua\n", esCapicua(5, arreglo, 0) ? " " : " no");
@@ -53,10 +60,14 @@ int main() {
 //    printf(" es igual a: %d\n", sumarArreglo(0, arreglo, 5));
 
     ///Ejercicio 7
-    int arregloRandom[5] = {rand()%10,rand()%10,rand()%10,rand()%10,rand()%10};
-    printf(" El menor del arreglo:\n");
+//    printf(" El menor del arreglo:\n");
+//    mostrarArreglo(0, arregloRandom, 5);
+//    printf(" es: %d\n", buscarMenor(0, arregloRandom, 5));
+
+    ///Ejercicio 8
+    escribirArregloEnArchivo(arregloRandom, 5);
     mostrarArreglo(0,arregloRandom,5);
-    printf(" es: %d\n", buscarMenor(0,arregloRandom,5));
+    printf("El menor del arreglo es: %d\n",buscarMenorDeArchivo(5));
 
     system("pause");
     return 0;
@@ -85,15 +96,12 @@ void mostrarArreglo(int inicio, int arreglo[], int final) {
     }
 }
 
-void mostrarArregloInvertido(int inicio, int arreglo[], int validos) {
-    if (validos <= inicio) {
-        mostrarArregloInvertido(validos - 1, arreglo, validos);
-    } else if (0 <= inicio) {
-        printf(" [%d] ", arreglo[inicio]);
-        mostrarArregloInvertido(inicio - 1, arreglo, validos);
-    } else {
-        printf("\n");
+void mostrarArregloInvertido(int posicion, int arreglo[], int validos) {
+    if (posicion < validos) {
+        mostrarArregloInvertido(posicion + 1, arreglo, validos);
+        printf("[%d] ", arreglo[posicion]);
     }
+    if (posicion == 0) printf("\n");
 }
 
 int esCapicua(int validos, int arreglo[], int iteracion) {
@@ -110,11 +118,33 @@ int sumarArreglo(int iteracion, int arreglo[], int validos) {
     return (iteracion < validos) ? arreglo[iteracion] + sumarArreglo(iteracion + 1, arreglo, validos) : 0;
 }
 
-int buscarMenor(int indice,int arreglo[],int validos){
-    if (indice < validos){
-        int minimo = buscarMenor(indice+1,arreglo,validos);
+int buscarMenor(int indice, int arreglo[], int validos) {
+    if (indice < validos) {
+        int minimo = buscarMenor(indice + 1, arreglo, validos);
         return minimo < arreglo[indice] ? minimo : arreglo[indice];
     } else {
-        return arreglo[indice-1];
+        return arreglo[indice - 1];
+    }
+}
+
+void escribirArregloEnArchivo(int arreglo[], int validos) {
+    FILE *archivo = fopen("archivo.dat", "wb");
+    fwrite(arreglo, sizeof(int), validos, archivo);
+    fclose(archivo);
+}
+
+int buscarMenorDeArchivo(int validos){
+    FILE* archivo = fopen("archivo.dat","rb");
+    return realizarBusqueda(archivo,validos,0);
+}
+
+int realizarBusqueda(FILE * archivo,int validos,int indice){
+    int valorActual = INT_MAX;
+    fread(&valorActual, sizeof(int),1,archivo);
+    if (indice < validos){
+        int valorSiguiente = realizarBusqueda(archivo,validos,indice+1);
+        return valorActual < valorSiguiente ? valorActual : valorSiguiente;
+    } else {
+        return valorActual;
     }
 }
